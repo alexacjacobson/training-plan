@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Road to the Golden Gate 5K</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky-top:#E8A24A;
+    --sky-mid:#C1502E;
+    --sky-bot:#5C3A21;
+    --paper:#FBF6EC;
+    --paper-line:#E4D3B8;
+    --ink:#4A2E1C;
+    --pumpkin:#D9772E;
+    --rust:#A6401F;
+    --mustard:#E0A937;
+    --done-bg:#E3DED2;
+    --done-border:#C9C1AE;
+    --done-text:#8C8478;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Quicksand',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:10px;
+  }
+  .sheet{
+    width:100%;
+    max-width:800px;
+    background:var(--paper);
+    border:2px solid var(--paper-line);
+    border-radius:16px;
+    overflow:hidden;
+    position:relative;
+    box-shadow:0 4px 18px rgba(90,50,20,0.12);
+  }
+  header{
+    background:linear-gradient(180deg,var(--sky-top) 0%, var(--sky-mid) 55%, var(--sky-bot) 100%);
+    padding:16px 22px 14px;
+    text-align:center;
+  }
+  header h1{
+    font-family:'Playfair Display',serif;
+    color:#FFF5E4;
+    font-size:26px;
+    margin:0 0 4px;
+    letter-spacing:0.3px;
+  }
+  header p{
+    margin:0;
+    color:#FBE3C2;
+    font-size:13.5px;
+    font-weight:600;
+  }
+  .legend{
+    display:flex;
+    justify-content:center;
+    gap:16px;
+    font-size:12px;
+    padding:8px 12px;
+    background:#F6EAD3;
+    border-bottom:1px solid var(--paper-line);
+    color:var(--ink);
+    flex-wrap:wrap;
+  }
+  .scroll-hint{
+    text-align:center;
+    font-size:10.5px;
+    color:#9A7B54;
+    padding:6px 0 0;
+    font-weight:600;
+  }
+  .table-wrap{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    padding:8px 0 4px;
+    margin:0 4px;
+  }
+  table{border-collapse:collapse; width:max-content; min-width:100%;}
+  td.wk{
+    font-family:'Playfair Display',serif;
+    font-weight:700;
+    font-size:13px;
+    color:var(--rust);
+    white-space:nowrap;
+    padding:5px 10px 5px 14px;
+    vertical-align:middle;
+    width:88px;
+    position:sticky;
+    left:0;
+    background:var(--paper);
+    z-index:2;
+    box-shadow:2px 0 5px rgba(90,50,20,0.06);
+  }
+  td.wk span{
+    display:block;
+    font-family:'Quicksand',sans-serif;
+    font-weight:600;
+    font-size:9.5px;
+    color:#8A6A48;
+  }
+  .row{border-bottom:1px dashed var(--paper-line);}
+  .row:last-child{border-bottom:none;}
+  .cell{
+    padding:4px 5px;
+    vertical-align:middle;
+    width:145px;
+    min-width:145px;
+  }
+  .cell.wide{width:220px; min-width:220px;}
+  label.task{
+    display:flex;
+    align-items:flex-start;
+    gap:5px;
+    background:#fff;
+    border:1px solid var(--paper-line);
+    border-radius:9px;
+    padding:5px 7px;
+    cursor:pointer;
+    transition:background .2s, border-color .2s, color .2s;
+    min-height:34px;
+  }
+  label.task:hover{border-color:var(--pumpkin);}
+  label.task.done{
+    background:var(--done-bg);
+    border-color:var(--done-border);
+  }
+  label.task.done .label{
+    text-decoration:line-through;
+    color:var(--done-text);
+  }
+  label.task input{
+    margin-top:2px;
+    accent-color:var(--rust);
+    width:14px;height:14px;
+    flex-shrink:0;
+  }
+  .label{font-size:11.3px;line-height:1.25;font-weight:600;}
+  .cross .task{border-style:dashed;}
+  .cross .label{color:#6B7A5E;}
+  .cross .task.done .label{color:var(--done-text);}
+  .race .task{
+    background:linear-gradient(90deg,#F7D9A6,#F3C280);
+    border-color:var(--rust);
+  }
+  .race .task .label{font-weight:700;color:var(--rust);}
+  .race .task.done{background:var(--done-bg); border-color:var(--done-border);}
+  .race .task.done .label{color:var(--done-text);}
+
+  .tracker{
+    margin:10px 18px 14px;
+    padding:12px 16px;
+    background:#F6EAD3;
+    border:1px solid var(--paper-line);
+    border-radius:14px;
+  }
+  .tracker h2{
+    font-family:'Playfair Display',serif;
+    font-size:15px;
+    margin:0 0 8px;
+    color:var(--ink);
+  }
+  .bar-wrap{
+    position:relative;
+    background:#EADFC5;
+    border:1px solid var(--paper-line);
+    border-radius:20px;
+    height:20px;
+    overflow:hidden;
+  }
+  .bar-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,var(--mustard),var(--pumpkin),var(--rust));
+    transition:width .5s ease;
+    border-radius:20px 0 0 20px;
+  }
+  .stats{
+    display:flex;
+    justify-content:space-between;
+    font-size:11.5px;
+    font-weight:700;
+    margin-top:6px;
+    color:var(--ink);
+  }
+  .tracker .fine{font-weight:500;font-size:10px;color:#8A6A48;display:block;margin-top:3px;}
+  .tracker-foot{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:10px;
+    padding-top:9px;
+    border-top:1px dashed var(--paper-line);
+    font-size:11px;
+    font-weight:600;
+  }
+  .pace{display:flex;gap:12px;flex-wrap:wrap;}
+  .pace label{display:flex;align-items:center;gap:4px;}
+  .pace input{
+    width:48px;
+    font:inherit;
+    color:var(--ink);
+    background:#fff;
+    border:1px solid var(--paper-line);
+    border-radius:7px;
+    padding:3px 5px;
+    text-align:center;
+  }
+  .pace input:focus{outline:none;border-color:var(--pumpkin);}
+  button.reset{
+    font:inherit;
+    color:var(--rust);
+    background:transparent;
+    border:1px solid var(--paper-line);
+    border-radius:20px;
+    padding:4px 12px;
+    cursor:pointer;
+    transition:background .2s, border-color .2s, color .2s;
+  }
+  button.reset:hover{border-color:var(--rust);}
+  button.reset.armed{background:var(--rust);border-color:var(--rust);color:#FFF5E4;}
+
+  .leaf{
+    position:fixed;
+    top:-30px;
+    font-size:20px;
+    pointer-events:none;
+    z-index:999;
+    animation:fall linear forwards;
+  }
+  @keyframes fall{
+    to{ transform:translateY(110vh) rotate(360deg); opacity:0.85; }
+  }
+  @media (max-width:480px){
+    header h1{font-size:21px;}
+    .label{font-size:10.5px;}
+  }
+</style>
+</head>
+<body>
+<div class="sheet" id="sheet">
+
+  <header>
+    <h1>🍂 Your Road to the Golden Gate 5K 🍁</h1>
+    <p>Race Day: Sunday, November 1, 2026 · San Francisco</p>
+  </header>
+
+  <div class="legend">
+    <span>🏃 Run/walk day</span>
+    <span>🧘 Yoga (optional)</span>
+    <span>🚴 Spin (optional)</span>
+  </div>
+  <div class="scroll-hint">← swipe to see the full week →</div>
+
+  <div class="table-wrap">
+    <table id="plan"></table>
+  </div>
+
+  <div class="tracker">
+    <h2>🍁 Mileage Tracker</h2>
+    <div class="bar-wrap"><div class="bar-fill" id="barFill"></div></div>
+    <div class="stats">
+      <span id="statMiles">0.0 mi logged</span>
+      <span id="statTime">0 min moved</span>
+    </div>
+    <span class="fine" id="statFine"></span>
+    <div class="tracker-foot">
+      <div class="pace">
+        <label>🏃 Jog <input type="number" id="paceRun" min="6" max="30" step="0.5"> min/mi</label>
+        <label>🚶 Walk <input type="number" id="paceWalk" min="10" max="40" step="0.5"> min/mi</label>
+      </div>
+      <button type="button" class="reset" id="resetBtn">Reset progress</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const sessions = [
+  {wk:1, dates:"Sep 14–20", label:"Run 1 / Walk 2 ×6", run:6, walk:12},
+  {wk:1, dates:"Sep 14–20", label:"Run 1 / Walk 2 ×6", run:6, walk:12},
+  {wk:1, dates:"Sep 14–20", label:"Run 1 / Walk 2 ×6", run:6, walk:12},
+
+  {wk:2, dates:"Sep 21–27", label:"Run 2 / Walk 2 ×5", run:10, walk:10},
+  {wk:2, dates:"Sep 21–27", label:"Run 2 / Walk 2 ×5", run:10, walk:10},
+  {wk:2, dates:"Sep 21–27", label:"Run 2 / Walk 2 ×5", run:10, walk:10},
+
+  {wk:3, dates:"Sep 28–Oct 4", label:"Run 3 / Walk 2 ×4", run:12, walk:8},
+  {wk:3, dates:"Sep 28–Oct 4", label:"Run 3 / Walk 2 ×4", run:12, walk:8},
+  {wk:3, dates:"Sep 28–Oct 4", label:"Run 3 / Walk 2 ×4", run:12, walk:8},
+
+  {wk:4, dates:"Oct 5–11", label:"Run 5 / Walk 2 ×3", run:15, walk:6},
+  {wk:4, dates:"Oct 5–11", label:"Run 5 / Walk 2 ×3", run:15, walk:6},
+  {wk:4, dates:"Oct 5–11", label:"Run 5 / Walk 2 ×3", run:15, walk:6},
+
+  {wk:5, dates:"Oct 12–18", label:"Run 8/Walk 1.5 ×2 + Run 5", run:21, walk:3},
+  {wk:5, dates:"Oct 12–18", label:"Run 8/Walk 1.5 ×2 + Run 5", run:21, walk:3},
+  {wk:5, dates:"Oct 12–18", label:"Run 10 / Walk 2 ×2 (longest)", run:20, walk:4},
+
+  {wk:6, dates:"Oct 19–25", label:"Run 12 / Walk 1 ×2", run:24, walk:2},
+  {wk:6, dates:"Oct 19–25", label:"Run 15 / Walk 2 / Run 8", run:23, walk:2},
+  {wk:6, dates:"Oct 19–25", label:"Dress rehearsal: 20–25 min continuous", run:25, walk:0},
+
+  {wk:7, dates:"Oct 26–Nov 1", label:"Easy 15 min jog/walk", run:10, walk:5},
+  {wk:7, dates:"Oct 26–Nov 1", label:"10 min shakeout jog", run:10, walk:0},
+];
+const crossTrainByWeek = {
+  1:"🧘🚴 Cross-train (optional)", 2:"🧘🚴 Cross-train (optional)", 3:"🧘🚴 Cross-train (optional)",
+  4:"🧘🚴 Cross-train (optional)", 5:"🧘🚴 Cross-train (optional)", 6:"🧘🚴 Cross-train (optional)",
+  7:"🧘🚴 Cross-train (optional)"
+};
+const race = {label:"🏁 RACE DAY — Golden Gate 5K (3.1 mi)"};
+
+// Defaults for a first visit; adjustable in the tracker and saved with progress.
+let paceRun = 12;   // min per mile, easy jog
+let paceWalk = 20;  // min per mile, relaxed walk
+function distFor(s){ return s.run/paceRun + s.walk/paceWalk; }
+
+const table = document.getElementById('plan');
+let checks = new Array(sessions.length).fill(false);
+let crossChecks = {1:false,2:false,3:false,4:false,5:false,6:false,7:false};
+let raceChecked = false;
+
+function buildTable(){
+  let html = "";
+  let i = 0;
+  while(i < sessions.length){
+    const wk = sessions[i].wk, dates = sessions[i].dates;
+    let rowCells = "";
+    let count = 0;
+    while(i < sessions.length && sessions[i].wk === wk && count < 3){
+      rowCells += cellHTML(i);
+      i++; count++;
+    }
+    rowCells += `<td class="cell wide cross">
+      <label class="task" for="cross${wk}">
+        <input type="checkbox" id="cross${wk}" data-wk="${wk}">
+        <span class="label">${crossTrainByWeek[wk]}</span>
+      </label>
+    </td>`;
+    html += `<tr class="row"><td class="wk">Week ${wk}<span>${dates}</span></td>${rowCells}</tr>`;
+  }
+  html += `<tr class="row race"><td class="wk">Week 7<span>Nov 1</span></td>
+            <td class="cell wide" colspan="4">
+              <label class="task" for="raceCheck">
+                <input type="checkbox" id="raceCheck">
+                <span class="label">${race.label}</span>
+              </label>
+            </td></tr>`;
+  table.innerHTML = html;
+}
+function cellHTML(idx){
+  const s = sessions[idx];
+  return `<td class="cell">
+    <label class="task" for="chk${idx}">
+      <input type="checkbox" id="chk${idx}" data-idx="${idx}">
+      <span class="label">${s.label}</span>
+    </label>
+  </td>`;
+}
+
+function wireEvents(){
+  sessions.forEach((s,idx)=>{
+    const chk = document.getElementById('chk'+idx);
+    chk.addEventListener('change', ()=>{
+      checks[idx] = chk.checked;
+      chk.closest('label.task').classList.toggle('done', checks[idx]);
+      if(checks[idx]) dropLeaves();
+      save(); render();
+    });
+  });
+  Object.keys(crossChecks).forEach(wk=>{
+    const chk = document.getElementById('cross'+wk);
+    chk.addEventListener('change', ()=>{
+      crossChecks[wk] = chk.checked;
+      chk.closest('label.task').classList.toggle('done', crossChecks[wk]);
+      if(crossChecks[wk]) dropLeaves(5);
+      save();
+    });
+  });
+  const raceChk = document.getElementById('raceCheck');
+  raceChk.addEventListener('change', ()=>{
+    raceChecked = raceChk.checked;
+    raceChk.closest('label.task').classList.toggle('done', raceChecked);
+    if(raceChecked) dropLeaves(16);
+    save(); render();
+  });
+
+  [['paceRun',6,30],['paceWalk',10,40]].forEach(([id,min,max])=>{
+    const input = document.getElementById(id);
+    input.addEventListener('change', ()=>{
+      const v = parseFloat(input.value);
+      const fallback = id === 'paceRun' ? paceRun : paceWalk;
+      const clamped = isNaN(v) ? fallback : Math.min(max, Math.max(min, v));
+      if(id === 'paceRun') paceRun = clamped; else paceWalk = clamped;
+      input.value = clamped;
+      save(); render();
+    });
+  });
+
+  // Two-tap reset: first tap arms the button, second tap within 3s clears progress.
+  const resetBtn = document.getElementById('resetBtn');
+  let armTimer = null;
+  const disarm = ()=>{
+    clearTimeout(armTimer); armTimer = null;
+    resetBtn.classList.remove('armed');
+    resetBtn.textContent = "Reset progress";
+  };
+  resetBtn.addEventListener('click', ()=>{
+    if(!armTimer){
+      resetBtn.classList.add('armed');
+      resetBtn.textContent = "Tap again to clear all";
+      armTimer = setTimeout(disarm, 3000);
+      return;
+    }
+    disarm();
+    checks = new Array(sessions.length).fill(false);
+    Object.keys(crossChecks).forEach(wk=> crossChecks[wk] = false);
+    raceChecked = false;
+    syncCheckboxes();
+    save(); render();
+  });
+}
+
+function syncBox(id, on){
+  const chk = document.getElementById(id);
+  chk.checked = on;
+  chk.closest('label.task').classList.toggle('done', on);
+}
+function syncCheckboxes(){
+  sessions.forEach((s,idx)=> syncBox('chk'+idx, checks[idx]));
+  Object.keys(crossChecks).forEach(wk=> syncBox('cross'+wk, crossChecks[wk]));
+  syncBox('raceCheck', raceChecked);
+}
+
+function render(){
+  let totalMiles = 0, totalMin = 0, planMiles = 0;
+  sessions.forEach((s,idx)=>{
+    planMiles += distFor(s);
+    if(checks[idx]){ totalMiles += distFor(s); totalMin += s.run + s.walk; }
+  });
+  const pct = Math.min(100, (totalMiles/planMiles)*100);
+  document.getElementById('barFill').style.width = pct + "%";
+  document.getElementById('statMiles').textContent = totalMiles.toFixed(1) + " mi logged";
+  document.getElementById('statTime').textContent = totalMin + " min moved";
+  document.getElementById('statFine').textContent = raceChecked
+    ? "🏁 Race complete — 3.1 miles, and every step before it! 🍂"
+    : "Estimated at your paces below · " + planMiles.toFixed(1) + " training mi planned, then 3.1 mi on race day";
+}
+
+const LEAVES = ["🍁","🍂","🍃"];
+function dropLeaves(n){
+  n = n || 8;
+  const rect = document.getElementById('sheet').getBoundingClientRect();
+  for(let k=0;k<n;k++){
+    const leaf = document.createElement('span');
+    leaf.className = 'leaf';
+    leaf.textContent = LEAVES[Math.floor(Math.random()*LEAVES.length)];
+    leaf.style.left = (rect.left + Math.random()*rect.width) + "px";
+    leaf.style.animationDuration = (2.2 + Math.random()*1.4) + "s";
+    leaf.style.fontSize = (16 + Math.random()*12) + "px";
+    document.body.appendChild(leaf);
+    leaf.addEventListener('animationend', ()=> leaf.remove());
+  }
+}
+
+async function save(){
+  try{
+    await fetch('/api/progress', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({checks, crossChecks, raceChecked, paceRun, paceWalk}),
+    });
+  }catch(e){ /* offline or API unavailable, continue without persistence */ }
+}
+async function load(){
+  try{
+    const res = await fetch('/api/progress', {cache: 'no-store'});
+    if(!res.ok) return;
+    const data = await res.json();
+    if(data){
+      if(Array.isArray(data.checks) && data.checks.length === sessions.length){
+        checks = data.checks;
+      }
+      if(data.crossChecks) crossChecks = Object.assign(crossChecks, data.crossChecks);
+      raceChecked = !!data.raceChecked;
+      if(data.paceRun > 0) paceRun = data.paceRun;
+      if(data.paceWalk > 0) paceWalk = data.paceWalk;
+    }
+  }catch(e){ /* no saved progress yet */ }
+}
+
+(async function init(){
+  buildTable();
+  wireEvents();
+  await load();
+  syncCheckboxes();
+  document.getElementById('paceRun').value = paceRun;
+  document.getElementById('paceWalk').value = paceWalk;
+  render();
+})();
+</script>
+</body>
+</html>
