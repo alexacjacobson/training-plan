@@ -174,43 +174,6 @@
     color:var(--ink);
   }
   .tracker .fine{font-weight:500;font-size:10px;color:#8A6A48;display:block;margin-top:3px;}
-  .tracker-foot{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-top:10px;
-    padding-top:9px;
-    border-top:1px dashed var(--paper-line);
-    font-size:11px;
-    font-weight:600;
-  }
-  .pace{display:flex;gap:12px;flex-wrap:wrap;}
-  .pace label{display:flex;align-items:center;gap:4px;}
-  .pace input{
-    width:48px;
-    font:inherit;
-    color:var(--ink);
-    background:#fff;
-    border:1px solid var(--paper-line);
-    border-radius:7px;
-    padding:3px 5px;
-    text-align:center;
-  }
-  .pace input:focus{outline:none;border-color:var(--pumpkin);}
-  button.reset{
-    font:inherit;
-    color:var(--rust);
-    background:transparent;
-    border:1px solid var(--paper-line);
-    border-radius:20px;
-    padding:4px 12px;
-    cursor:pointer;
-    transition:background .2s, border-color .2s, color .2s;
-  }
-  button.reset:hover{border-color:var(--rust);}
-  button.reset.armed{background:var(--rust);border-color:var(--rust);color:#FFF5E4;}
 
   .leaf{
     position:fixed;
@@ -251,13 +214,6 @@
       <span id="statTime">0 min moved</span>
     </div>
     <span class="fine" id="statFine"></span>
-    <div class="tracker-foot">
-      <div class="pace">
-        <label>🏃 Jog <input type="number" id="paceRun" min="6" max="30" step="0.5"> min/mi</label>
-        <label>🚶 Walk <input type="number" id="paceWalk" min="10" max="40" step="0.5"> min/mi</label>
-      </div>
-      <button type="button" class="reset" id="resetBtn">Reset progress</button>
-    </div>
   </div>
 
 </div>
@@ -372,41 +328,6 @@ function wireEvents(){
     if(raceChecked) dropLeaves(16);
     save(); render();
   });
-
-  [['paceRun',6,30],['paceWalk',10,40]].forEach(([id,min,max])=>{
-    const input = document.getElementById(id);
-    input.addEventListener('change', ()=>{
-      const v = parseFloat(input.value);
-      const fallback = id === 'paceRun' ? paceRun : paceWalk;
-      const clamped = isNaN(v) ? fallback : Math.min(max, Math.max(min, v));
-      if(id === 'paceRun') paceRun = clamped; else paceWalk = clamped;
-      input.value = clamped;
-      save(); render();
-    });
-  });
-
-  // Two-tap reset: first tap arms the button, second tap within 3s clears progress.
-  const resetBtn = document.getElementById('resetBtn');
-  let armTimer = null;
-  const disarm = ()=>{
-    clearTimeout(armTimer); armTimer = null;
-    resetBtn.classList.remove('armed');
-    resetBtn.textContent = "Reset progress";
-  };
-  resetBtn.addEventListener('click', ()=>{
-    if(!armTimer){
-      resetBtn.classList.add('armed');
-      resetBtn.textContent = "Tap again to clear all";
-      armTimer = setTimeout(disarm, 3000);
-      return;
-    }
-    disarm();
-    checks = new Array(sessions.length).fill(false);
-    Object.keys(crossChecks).forEach(wk=> crossChecks[wk] = false);
-    raceChecked = false;
-    syncCheckboxes();
-    save(); render();
-  });
 }
 
 function syncBox(id, on){
@@ -432,7 +353,7 @@ function render(){
   document.getElementById('statTime').textContent = totalMin + " min moved";
   document.getElementById('statFine').textContent = raceChecked
     ? "🏁 Race complete — 3.1 miles, and every step before it! 🍂"
-    : "Estimated at your paces below · " + planMiles.toFixed(1) + " training mi planned, then 3.1 mi on race day";
+    : "Estimated at your jog/walk paces · " + planMiles.toFixed(1) + " training mi planned, then 3.1 mi on race day";
 }
 
 const LEAVES = ["🍁","🍂","🍃"];
@@ -482,8 +403,6 @@ async function load(){
   wireEvents();
   await load();
   syncCheckboxes();
-  document.getElementById('paceRun').value = paceRun;
-  document.getElementById('paceWalk').value = paceWalk;
   render();
 })();
 </script>
