@@ -450,7 +450,22 @@
   /* Week-complete version: stays open with a recap card, next-week button and close ✕ */
   .celebrate.big{cursor:default;overflow-y:auto;padding:72px 16px 32px;}
   /* Sparkles and stars fade away as the recap and next-week button come in. */
-  .celebrate.big.show-msg canvas{opacity:0;transition:opacity 1s ease .4s;}
+  .celebrate.big .wash{transition:opacity 1.1s ease;}
+  .celebrate.big.show-msg canvas{opacity:0;transition:opacity 1.2s ease 1s;}
+  /* Little sparkles that twinkle in and out behind the recap once it's up. */
+  .twinkles{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity 1s ease 1.4s;}
+  .celebrate.show-msg .twinkles{opacity:1;}
+  .twinkles svg{
+    position:absolute;
+    height:auto;
+    opacity:0;
+    transform:translate(-50%,-50%) scale(.4);
+    animation:twinkle ease-in-out infinite;
+  }
+  @keyframes twinkle{
+    0%,100%{opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(0deg);}
+    50%{opacity:.9;transform:translate(-50%,-50%) scale(1) rotate(45deg);}
+  }
   .celebrate.big .msg{margin:auto;padding:0;width:100%;max-width:460px;}
   .celebrate .recap{
     margin:26px auto 0;
@@ -463,7 +478,7 @@
     box-shadow:0 10px 30px rgba(60,20,5,0.3);
     opacity:0;
     transform:translateY(10px);
-    transition:opacity .5s ease .6s, transform .5s ease .6s;
+    transition:opacity .5s ease 1.2s, transform .5s ease 1.2s;
   }
   .recap-head{
     font-size:12px;
@@ -524,7 +539,7 @@
     box-shadow:0 6px 18px rgba(60,20,5,0.3);
     opacity:0;
     transform:translateY(10px);
-    transition:opacity .5s ease .8s, transform .5s ease .8s;
+    transition:opacity .5s ease 1.6s, transform .5s ease 1.6s;
   }
   .celebrate-close{
     position:fixed;
@@ -556,6 +571,7 @@
   .celebrate.out{opacity:0;}
   @media (prefers-reduced-motion:reduce){
     .celebrate .msg, .celebrate .msg-sub, .celebrate .recap, .celebrate-next{transform:none;}
+    .twinkles svg{animation:none;opacity:.5;transform:translate(-50%,-50%);}
   }
   @media (max-width:480px){
     .top h1{font-size:23px;}
@@ -1062,7 +1078,7 @@ function celebrate(week){
   if(activeCelebration) activeCelebration.close(true);
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const big = week != null;
-  const T = big ? {wash:650, msg:1300} : {wash:550, msg:1150, close:3100};
+  const T = big ? {wash:900, msg:2100} : {wash:550, msg:1150, close:3100};
 
   const el = document.createElement('div');
   el.className = 'celebrate';
@@ -1081,6 +1097,10 @@ function celebrate(week){
     msg.querySelector('.msg-title').textContent = 'Congrats Kelsey!';
     msg.querySelector('.msg-sub').textContent = `You just completed Week ${week}'s workouts. Great job!`;
     el.insertAdjacentHTML('beforeend', `<button type="button" class="celebrate-close" aria-label="Close">${ICON_CLOSE}</button>`);
+    // Placed before the message so the twinkles sit behind the recap card.
+    msg.insertAdjacentHTML('beforebegin', `<div class="twinkles" aria-hidden="true">${Array.from({length:22}, ()=>
+      `<svg viewBox="0 0 24 24" style="left:${(Math.random()*100).toFixed(1)}%;top:${(Math.random()*100).toFixed(1)}%;width:${11 + Math.round(Math.random()*13)}px;color:${randomFestive()};animation-duration:${(2.2 + Math.random()*2).toFixed(2)}s;animation-delay:${(Math.random()*3).toFixed(2)}s"><path d="M12 0Q12 12 24 12Q12 12 12 24Q12 12 0 12Q12 12 12 0Z" fill="currentColor"/></svg>`
+    ).join('')}</div>`);
   } else {
     msg.textContent = pickCheer();
   }
@@ -1148,7 +1168,7 @@ function celebrate(week){
   if(!reduce) raf = requestAnimationFrame(frame);
 
   playHaptics(big
-    ? [0, 90, 180, 270, 360, 450, 560, 680, T.msg, T.msg + 90, T.msg + 180, T.msg + 420]
+    ? [0, 90, 180, 270, 360, 450, 560, 680, 820, 980, 1160, 1380, 1640, T.msg, T.msg + 90, T.msg + 180, T.msg + 420]
     : [0, 110, T.msg], timers);
 
   timers.push(setTimeout(()=> el.classList.add('show-wash'), reduce ? 0 : T.wash));
@@ -1158,7 +1178,7 @@ function celebrate(week){
       if(!reduce) spawnBurst();
       el.querySelector('.celebrate-next').focus({preventScroll:true});
       // Once the sparkle layer has faded out, stop drawing it.
-      timers.push(setTimeout(()=> cancelAnimationFrame(raf), 1500));
+      timers.push(setTimeout(()=> cancelAnimationFrame(raf), 2400));
     }
   }, reduce ? 250 : T.msg));
   if(!big) timers.push(setTimeout(()=> close(), reduce ? T.close - 900 : T.close));
