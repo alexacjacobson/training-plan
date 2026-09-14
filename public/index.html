@@ -330,26 +330,27 @@
   }
   @keyframes fadeIn{to{opacity:1;}}
   .home-panel{
-    background:rgba(251,246,236,0.2);
+    background:var(--paper);
     border-radius:22px;
-    padding:22px 16px 16px;
+    padding:24px 18px 18px;
+    box-shadow:0 10px 30px rgba(60,20,5,0.25);
   }
   .completed-title{
     font-size:12px;
     font-weight:700;
     letter-spacing:.08em;
     text-transform:uppercase;
-    color:#FBE3C2;
+    color:var(--muted);
     margin:26px 0 10px 2px;
   }
   .race-name{
     font-family:'Playfair Display',serif;
     font-size:28px;
-    color:#FFF5E4;
+    color:var(--rust);
     margin:0;
     line-height:1.15;
   }
-  .plan-name{margin:2px 0 18px;font-size:13.5px;font-weight:600;color:#FBE3C2;}
+  .plan-name{margin:2px 0 18px;font-size:13.5px;font-weight:600;color:var(--muted);}
   .week-list{display:flex;flex-direction:column;gap:10px;}
   .week-card{
     display:flex;
@@ -368,9 +369,7 @@
     transition:box-shadow .2s;
   }
   .week-card:hover{box-shadow:var(--shadow-hover);}
-  .week-card:disabled{background:rgba(255,245,228,0.12);box-shadow:none;cursor:default;}
-  .week-card:disabled .wc-tag,
-  .week-card:disabled .wc-dates{color:rgba(255,245,228,0.78);}
+  .week-card:disabled{background:#F1ECE2;box-shadow:none;cursor:default;opacity:.6;}
   .week-card.completed{background:var(--done-bg);box-shadow:none;}
   .week-card.completed .wc-title,
   .week-card.completed .wc-dates{color:var(--done-text);}
@@ -384,10 +383,10 @@
     color:#9A7B54;
   }
   .wc-title{font-family:'Playfair Display',serif;font-weight:700;font-size:21px;color:var(--rust);}
-  .week-card:disabled .wc-title{color:rgba(255,245,228,0.9);}
+  .week-card:disabled .wc-title{color:var(--ink);}
   .wc-dates{font-size:13px;font-weight:600;color:var(--muted);}
   .wc-end{font-size:24px;color:var(--rust);flex-shrink:0;}
-  .week-card:disabled .wc-end{font-size:17px;opacity:.85;}
+  .week-card:disabled .wc-end{font-size:17px;}
   .week-card.current .wc-end{
     width:36px;height:36px;
     display:grid;
