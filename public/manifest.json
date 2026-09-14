@@ -1,0 +1,16 @@
+{
+  "name": "Golden Gate 5K Training",
+  "short_name": "5K Tracker",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#A6401F",
+  "icons": [
+    {
+      "src": "/appicon.png",
+      "sizes": "678x678",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
