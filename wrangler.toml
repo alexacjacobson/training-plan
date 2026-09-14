@@ -6,4 +6,4 @@ pages_build_output_dir = "public"
 
 [[kv_namespaces]]
 binding = "PROGRESS"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "62304600a64c43c5a2bb27b575f8ff2d"
