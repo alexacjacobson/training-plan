@@ -175,16 +175,42 @@
   }
   .tracker .fine{font-weight:500;font-size:10px;color:#8A6A48;display:block;margin-top:3px;}
 
-  .leaf{
+  .celebrate{
     position:fixed;
-    top:-30px;
-    font-size:20px;
-    pointer-events:none;
-    z-index:999;
-    animation:fall linear forwards;
+    inset:0;
+    z-index:1000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:opacity .45s ease;
   }
-  @keyframes fall{
-    to{ transform:translateY(110vh) rotate(360deg); opacity:0.85; }
+  .celebrate .wash{
+    position:absolute;
+    inset:0;
+    background:var(--rust);
+    opacity:0;
+    transition:opacity .7s ease;
+  }
+  .celebrate canvas{position:absolute;inset:0;width:100%;height:100%;}
+  .celebrate .msg{
+    position:relative;
+    font-family:'Playfair Display',serif;
+    font-weight:700;
+    font-size:clamp(34px,8vw,64px);
+    line-height:1.15;
+    color:#fff;
+    text-align:center;
+    padding:0 24px;
+    opacity:0;
+    transform:scale(.7);
+    transition:opacity .5s ease, transform .65s cubic-bezier(.2,.9,.3,1.25);
+  }
+  .celebrate.show-wash .wash{opacity:1;}
+  .celebrate.show-msg .msg{opacity:1;transform:scale(1);}
+  .celebrate.out{opacity:0;}
+  @media (prefers-reduced-motion:reduce){
+    .celebrate .msg{transform:none;}
   }
   @media (max-width:480px){
     header h1{font-size:21px;}
@@ -254,7 +280,7 @@ const crossTrainByWeek = {
 };
 const race = {label:"🏁 RACE DAY — Golden Gate 5K (3.1 mi)"};
 
-// Defaults for a first visit; adjustable in the tracker and saved with progress.
+// Defaults for a first visit; overridden by paces saved with progress.
 let paceRun = 12;   // min per mile, easy jog
 let paceWalk = 20;  // min per mile, relaxed walk
 function distFor(s){ return s.run/paceRun + s.walk/paceWalk; }
@@ -308,7 +334,7 @@ function wireEvents(){
     chk.addEventListener('change', ()=>{
       checks[idx] = chk.checked;
       chk.closest('label.task').classList.toggle('done', checks[idx]);
-      if(checks[idx]) dropLeaves();
+      if(checks[idx]) celebrate();
       save(); render();
     });
   });
@@ -317,7 +343,7 @@ function wireEvents(){
     chk.addEventListener('change', ()=>{
       crossChecks[wk] = chk.checked;
       chk.closest('label.task').classList.toggle('done', crossChecks[wk]);
-      if(crossChecks[wk]) dropLeaves(5);
+      if(crossChecks[wk]) celebrate();
       save();
     });
   });
@@ -325,7 +351,7 @@ function wireEvents(){
   raceChk.addEventListener('change', ()=>{
     raceChecked = raceChk.checked;
     raceChk.closest('label.task').classList.toggle('done', raceChecked);
-    if(raceChecked) dropLeaves(16);
+    if(raceChecked) celebrate();
     save(); render();
   });
 }
@@ -356,20 +382,115 @@ function render(){
     : "Estimated at your jog/walk paces · " + planMiles.toFixed(1) + " training mi planned, then 3.1 mi on race day";
 }
 
-const LEAVES = ["🍁","🍂","🍃"];
-function dropLeaves(n){
-  n = n || 8;
-  const rect = document.getElementById('sheet').getBoundingClientRect();
-  for(let k=0;k<n;k++){
-    const leaf = document.createElement('span');
-    leaf.className = 'leaf';
-    leaf.textContent = LEAVES[Math.floor(Math.random()*LEAVES.length)];
-    leaf.style.left = (rect.left + Math.random()*rect.width) + "px";
-    leaf.style.animationDuration = (2.2 + Math.random()*1.4) + "s";
-    leaf.style.fontSize = (16 + Math.random()*12) + "px";
-    document.body.appendChild(leaf);
-    leaf.addEventListener('animationend', ()=> leaf.remove());
+const CHEERS = ["Nice one!", "Way to push it!", "Great effort today!", "Way to get after it!"];
+const REPEAT_CHEER = "She did it again!";
+let lastCheer = null;
+let activeCelebration = null;
+
+function loggedCount(){
+  return checks.filter(Boolean).length
+    + Object.values(crossChecks).filter(Boolean).length
+    + (raceChecked ? 1 : 0);
+}
+function pickCheer(){
+  // Called after the new check is recorded, so >1 means something was already logged.
+  const pool = loggedCount() > 1 ? [...CHEERS, REPEAT_CHEER] : CHEERS;
+  const options = pool.filter(c => c !== lastCheer);
+  lastCheer = options[Math.floor(Math.random()*options.length)];
+  return lastCheer;
+}
+
+function newSparkle(W, H, initial){
+  return {
+    x: Math.random()*W,
+    y: initial ? Math.random()*H : -10 - Math.random()*40,
+    vx: (Math.random()-0.5)*50,
+    vy: 60 + Math.random()*180,
+    size: 3 + Math.random()*9,
+    rot: Math.random()*Math.PI,
+    spin: (Math.random()-0.5)*3,
+    phase: Math.random()*Math.PI*2,
+    delay: initial ? Math.random()*650 : 0,
+  };
+}
+function drawSparkle(ctx, x, y, r, rot){
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rot);
+  ctx.beginPath();
+  ctx.moveTo(0, -r);
+  ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.quadraticCurveTo(0, 0, 0, r);
+  ctx.quadraticCurveTo(0, 0, -r, 0);
+  ctx.quadraticCurveTo(0, 0, 0, -r);
+  ctx.fill();
+  ctx.restore();
+}
+
+// Sparkle shower → rust wash fills in → cheer scales into place → fades out (tap to skip).
+function celebrate(){
+  if(activeCelebration) activeCelebration.close(true);
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const el = document.createElement('div');
+  el.className = 'celebrate';
+  el.innerHTML = '<div class="wash"></div><canvas></canvas><div class="msg" role="status"></div>';
+  el.querySelector('.msg').textContent = pickCheer();
+  document.body.appendChild(el);
+
+  const canvas = el.querySelector('canvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const W = window.innerWidth, H = window.innerHeight;
+  canvas.width = W*dpr; canvas.height = H*dpr;
+  ctx.scale(dpr, dpr);
+
+  const count = reduce ? 0 : Math.min(420, Math.round(W*H/2200));
+  const sparkles = Array.from({length:count}, ()=> newSparkle(W, H, true));
+  const start = performance.now();
+  let prev = start, raf = 0, closed = false;
+  const timers = [];
+
+  function frame(now){
+    const t = now - start;
+    const dt = Math.min(0.05, (now - prev)/1000);
+    prev = now;
+    // Sparkles start rust, then shift to a pale glint as the rust wash fills in behind them.
+    const mix = Math.min(1, Math.max(0, (t - 550)/700));
+    const r = Math.round(166 + 89*mix), g = Math.round(64 + 176*mix), b = Math.round(31 + 195*mix);
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    for(const s of sparkles){
+      if(t < s.delay) continue;
+      s.x += s.vx*dt; s.y += s.vy*dt; s.rot += s.spin*dt;
+      if(s.y > H + 20 && t < 1800) Object.assign(s, newSparkle(W, H, false));
+      const grow = Math.min(1, (t - s.delay)/250);
+      ctx.globalAlpha = 0.55 + 0.45*Math.sin(t/140 + s.phase);
+      drawSparkle(ctx, s.x, s.y, s.size*grow, s.rot);
+    }
+    ctx.globalAlpha = 1;
+    raf = requestAnimationFrame(frame);
   }
+  if(!reduce) raf = requestAnimationFrame(frame);
+
+  timers.push(setTimeout(()=> el.classList.add('show-wash'), reduce ? 0 : 550));
+  timers.push(setTimeout(()=> el.classList.add('show-msg'), reduce ? 250 : 1150));
+  timers.push(setTimeout(()=> close(), reduce ? 2200 : 3100));
+
+  function close(immediate){
+    if(closed) return;
+    closed = true;
+    timers.forEach(clearTimeout);
+    if(activeCelebration === api) activeCelebration = null;
+    const finish = ()=>{ cancelAnimationFrame(raf); el.remove(); };
+    if(immediate) return finish();
+    el.classList.add('out');
+    setTimeout(finish, 450);
+  }
+  el.addEventListener('click', ()=>{ if(performance.now() - start > 400) close(); });
+
+  const api = {close};
+  activeCelebration = api;
 }
 
 async function save(){
