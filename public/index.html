@@ -2,23 +2,23 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Road to the Golden Gate 5K</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kelsey's 5K Training Plan</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --sky-top:#E8A24A;
-    --sky-mid:#C1502E;
-    --sky-bot:#5C3A21;
     --paper:#FBF6EC;
     --paper-line:#E4D3B8;
     --ink:#4A2E1C;
+    --muted:#8A6A48;
     --pumpkin:#D9772E;
     --rust:#A6401F;
     --mustard:#E0A937;
     --done-bg:#E3DED2;
-    --done-border:#C9C1AE;
     --done-text:#8C8478;
+    --shadow:0 1px 3px rgba(90,50,20,0.08), 0 2px 8px rgba(90,50,20,0.06);
+    --shadow-hover:0 2px 6px rgba(90,50,20,0.12), 0 4px 14px rgba(90,50,20,0.10);
   }
   *{box-sizing:border-box;}
   body{
@@ -26,38 +26,146 @@
     font-family:'Quicksand',sans-serif;
     background:var(--paper);
     color:var(--ink);
-    display:flex;
-    justify-content:center;
-    padding:10px;
   }
-  .sheet{
-    width:100%;
-    max-width:800px;
-    background:var(--paper);
-    border:2px solid var(--paper-line);
-    border-radius:16px;
-    overflow:hidden;
-    position:relative;
-    box-shadow:0 4px 18px rgba(90,50,20,0.12);
-  }
-  header{
+  button{font:inherit;}
+
+  /* Header */
+  .top{
     background:var(--rust);
-    padding:16px 22px 14px;
-    text-align:center;
+    padding:18px 20px;
   }
-  header h1{
+  .top-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .top h1{
     font-family:'Playfair Display',serif;
     color:#FFF5E4;
-    font-size:26px;
-    margin:0 0 4px;
+    font-size:30px;
+    margin:0;
     letter-spacing:0.3px;
   }
-  header p{
-    margin:0;
+  .top p{
+    margin:2px 0 0;
     color:#FBE3C2;
     font-size:13.5px;
     font-weight:600;
   }
+  .icon-btn{
+    width:44px;height:44px;
+    flex-shrink:0;
+    display:grid;
+    place-items:center;
+    border:none;
+    border-radius:12px;
+    background:rgba(255,245,228,0.14);
+    color:#FFF5E4;
+    cursor:pointer;
+    transition:background .2s;
+  }
+  .icon-btn:hover{background:rgba(255,245,228,0.26);}
+  .icon-btn:focus-visible{outline:2px solid #FFF5E4;outline-offset:2px;}
+
+  .page{max-width:560px;margin:0 auto;padding-inline:16px;}
+  .page.wide{max-width:840px;}
+
+  /* Week view */
+  .week-nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin:26px 0 4px;
+  }
+  .week-title{text-align:center;}
+  .week-title h2{
+    font-family:'Playfair Display',serif;
+    font-size:34px;
+    color:var(--rust);
+    margin:0;
+    line-height:1.1;
+  }
+  .week-title span{font-size:14px;font-weight:600;color:var(--muted);}
+  .nav-btn{
+    width:44px;height:44px;
+    flex-shrink:0;
+    border:none;
+    border-radius:50%;
+    background:#fff;
+    color:var(--rust);
+    font-size:24px;
+    line-height:1;
+    cursor:pointer;
+    box-shadow:var(--shadow);
+  }
+  .nav-btn.lock{font-size:17px;}
+  .nav-btn:disabled{opacity:.4;cursor:default;box-shadow:none;}
+  .week-progress{
+    text-align:center;
+    font-size:13px;
+    font-weight:600;
+    color:var(--muted);
+    margin:4px 0 18px;
+  }
+  .cards{display:flex;flex-direction:column;gap:12px;}
+  label.card{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:#fff;
+    border-radius:14px;
+    padding:16px 18px;
+    cursor:pointer;
+    box-shadow:var(--shadow);
+    transition:background .2s, box-shadow .2s;
+  }
+  label.card:hover{box-shadow:var(--shadow-hover);}
+  label.card input{
+    width:22px;height:22px;
+    margin:0;
+    flex-shrink:0;
+    accent-color:var(--rust);
+  }
+  .card .body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+  .card .eyebrow{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:#9A7B54;
+  }
+  .card .label{font-size:17px;font-weight:600;line-height:1.3;}
+  .card .meta{font-size:13px;font-weight:700;color:#9A7B54;white-space:nowrap;}
+  .card.cross .label{color:#6B7A5E;}
+  .card.race .label{color:var(--rust);font-weight:700;}
+  label.card.done, label.task.done{background:var(--done-bg);box-shadow:none;}
+  .done .label{text-decoration:line-through;color:var(--done-text) !important;}
+
+  .unlock{margin:24px 0 36px;text-align:center;}
+  .btn{
+    font-weight:700;
+    font-size:15px;
+    border:none;
+    border-radius:999px;
+    padding:12px 22px;
+    cursor:pointer;
+    box-shadow:var(--shadow);
+  }
+  .btn.primary{background:var(--rust);color:#FFF5E4;}
+  .btn.secondary{background:#fff;color:var(--rust);}
+  .btn:hover{box-shadow:var(--shadow-hover);}
+  .unlock .hint{font-size:13.5px;font-weight:600;color:var(--muted);margin:0;}
+
+  /* Full plan view */
+  .view-title{
+    font-family:'Playfair Display',serif;
+    font-size:28px;
+    color:var(--rust);
+    margin:26px 0 2px;
+  }
+  .view-sub{margin:0 0 6px;font-size:13px;font-weight:600;color:var(--muted);}
   .scroll-hint{
     text-align:center;
     font-size:10.5px;
@@ -68,8 +176,7 @@
   .table-wrap{
     overflow-x:auto;
     -webkit-overflow-scrolling:touch;
-    padding:8px 0 4px;
-    margin:0 4px;
+    padding:8px 4px 4px;
   }
   table{border-collapse:collapse; width:max-content; min-width:100%;}
   td.wk{
@@ -78,9 +185,9 @@
     font-size:13px;
     color:var(--rust);
     white-space:nowrap;
-    padding:5px 10px 5px 14px;
+    padding:5px 10px 5px 8px;
     vertical-align:middle;
-    width:88px;
+    width:92px;
     position:sticky;
     left:0;
     background:var(--paper);
@@ -92,15 +199,41 @@
     font-family:'Quicksand',sans-serif;
     font-weight:600;
     font-size:9.5px;
-    color:#8A6A48;
+    color:var(--muted);
+  }
+  .wk-link{
+    background:none;
+    border:none;
+    padding:0;
+    font-family:'Playfair Display',serif;
+    font-weight:700;
+    font-size:13px;
+    color:var(--rust);
+    cursor:pointer;
+    text-decoration:underline;
+    text-decoration-color:var(--paper-line);
+    text-underline-offset:3px;
+  }
+  .wk-link:hover{text-decoration-color:var(--rust);}
+  .mini-unlock{
+    display:block;
+    margin-top:4px;
+    border:none;
+    border-radius:999px;
+    padding:3px 9px;
+    background:var(--rust);
+    color:#FFF5E4;
+    font-size:10px;
+    font-weight:700;
+    cursor:pointer;
   }
   .row{border-bottom:1px dashed var(--paper-line);}
   .row:last-child{border-bottom:none;}
   .cell{
     padding:4px 5px;
     vertical-align:middle;
-    width:145px;
-    min-width:145px;
+    width:170px;
+    min-width:170px;
   }
   .cell.wide{width:220px; min-width:220px;}
   label.task{
@@ -108,45 +241,35 @@
     align-items:flex-start;
     gap:5px;
     background:#fff;
-    border:none;
     border-radius:9px;
     padding:5px 7px;
     cursor:pointer;
-    box-shadow:0 1px 3px rgba(90,50,20,0.08), 0 2px 8px rgba(90,50,20,0.06);
-    transition:background .2s, box-shadow .2s, color .2s;
+    box-shadow:var(--shadow);
+    transition:background .2s, box-shadow .2s;
     min-height:34px;
   }
-  label.task:hover{box-shadow:0 2px 6px rgba(90,50,20,0.12), 0 4px 14px rgba(90,50,20,0.10);}
-  label.task.done{
-    background:var(--done-bg);
-    box-shadow:none;
-  }
-  label.task.done .label{
-    text-decoration:line-through;
-    color:var(--done-text);
-  }
+  label.task:hover{box-shadow:var(--shadow-hover);}
   label.task input{
     margin-top:2px;
     accent-color:var(--rust);
     width:14px;height:14px;
     flex-shrink:0;
   }
-  .label{font-size:11.3px;line-height:1.25;font-weight:600;}
-  .cross .label{color:#6B7A5E;}
-  .cross .task.done .label{color:var(--done-text);}
+  .task .label{font-size:11.3px;line-height:1.25;font-weight:600;}
+  .cross .task .label{color:#6B7A5E;}
   .race .task .label{font-weight:700;color:var(--rust);}
-  .race .task.done .label{color:var(--done-text);}
+  .row.locked label.task{opacity:.5;cursor:not-allowed;}
 
   .tracker{
-    margin:10px 18px 14px;
-    padding:12px 16px;
+    margin:16px 0 36px;
+    padding:14px 18px;
     background:#fff;
     border-radius:14px;
-    box-shadow:0 1px 3px rgba(90,50,20,0.08), 0 2px 8px rgba(90,50,20,0.06);
+    box-shadow:var(--shadow);
   }
   .tracker h2{
     font-family:'Playfair Display',serif;
-    font-size:15px;
+    font-size:16px;
     margin:0 0 8px;
     color:var(--ink);
   }
@@ -168,13 +291,13 @@
   .stats{
     display:flex;
     justify-content:space-between;
-    font-size:11.5px;
+    font-size:12px;
     font-weight:700;
     margin-top:6px;
-    color:var(--ink);
   }
-  .tracker .fine{font-weight:500;font-size:10px;color:#8A6A48;display:block;margin-top:3px;}
+  .tracker .fine{font-weight:500;font-size:10.5px;color:var(--muted);display:block;margin-top:3px;}
 
+  /* Celebration overlay */
   .celebrate{
     position:fixed;
     inset:0;
@@ -213,161 +336,199 @@
     .celebrate .msg{transform:none;}
   }
   @media (max-width:480px){
-    header h1{font-size:21px;}
-    .label{font-size:10.5px;}
+    .top h1{font-size:23px;}
+    .week-title h2{font-size:30px;}
+    .card .label{font-size:16px;}
+    .task .label{font-size:10.5px;}
   }
 </style>
 </head>
 <body>
-<div class="sheet" id="sheet">
 
-  <header>
-    <h1>🍂 Your Road to the Golden Gate 5K 🍁</h1>
-    <p>Race Day: Sunday, November 1, 2026 · San Francisco</p>
-  </header>
-
-  <div class="scroll-hint">← swipe to see the full week →</div>
-
-  <div class="table-wrap">
-    <table id="plan"></table>
-  </div>
-
-  <div class="tracker">
-    <h2>🍁 Mileage Tracker</h2>
-    <div class="bar-wrap"><div class="bar-fill" id="barFill"></div></div>
-    <div class="stats">
-      <span id="statMiles">0.0 mi logged</span>
-      <span id="statTime">0 min moved</span>
+<header class="top">
+  <div class="top-inner">
+    <div>
+      <h1>Kelsey's 5K Training Plan</h1>
+      <p>Golden Gate 5K · Sunday, Nov 1, 2026</p>
     </div>
-    <span class="fine" id="statFine"></span>
+    <button type="button" class="icon-btn" id="viewToggle" aria-label="Show full plan"></button>
   </div>
+</header>
 
-</div>
+<main>
+  <section class="page" id="weekView"></section>
+
+  <section class="page wide" id="planView" hidden>
+    <h2 class="view-title">Full plan</h2>
+    <p class="view-sub">Tap a week to open it</p>
+    <div class="scroll-hint">← swipe to see the full week →</div>
+    <div class="table-wrap">
+      <table id="plan"></table>
+    </div>
+
+    <div class="tracker">
+      <h2>🍁 Mileage Tracker</h2>
+      <div class="bar-wrap"><div class="bar-fill" id="barFill"></div></div>
+      <div class="stats">
+        <span id="statMiles">0.0 mi logged</span>
+        <span id="statTime">0 min moved</span>
+      </div>
+      <span class="fine" id="statFine"></span>
+    </div>
+  </section>
+</main>
 
 <script>
 const sessions = [
-  {wk:1, dates:"Sep 14–20", label:"Run 1 / Walk 2 ×6", run:6, walk:12},
-  {wk:1, dates:"Sep 14–20", label:"Run 1 / Walk 2 ×6", run:6, walk:12},
-  {wk:1, dates:"Sep 14–20", label:"Run 1 / Walk 2 ×6", run:6, walk:12},
+  {wk:1, dates:"Sep 14–20", label:"Run 1 min / Walk 2 min ×6", run:6, walk:12},
+  {wk:1, dates:"Sep 14–20", label:"Run 1 min / Walk 2 min ×6", run:6, walk:12},
+  {wk:1, dates:"Sep 14–20", label:"Run 1 min / Walk 2 min ×6", run:6, walk:12},
 
-  {wk:2, dates:"Sep 21–27", label:"Run 2 / Walk 2 ×5", run:10, walk:10},
-  {wk:2, dates:"Sep 21–27", label:"Run 2 / Walk 2 ×5", run:10, walk:10},
-  {wk:2, dates:"Sep 21–27", label:"Run 2 / Walk 2 ×5", run:10, walk:10},
+  {wk:2, dates:"Sep 21–27", label:"Run 2 min / Walk 2 min ×5", run:10, walk:10},
+  {wk:2, dates:"Sep 21–27", label:"Run 2 min / Walk 2 min ×5", run:10, walk:10},
+  {wk:2, dates:"Sep 21–27", label:"Run 2 min / Walk 2 min ×5", run:10, walk:10},
 
-  {wk:3, dates:"Sep 28–Oct 4", label:"Run 3 / Walk 2 ×4", run:12, walk:8},
-  {wk:3, dates:"Sep 28–Oct 4", label:"Run 3 / Walk 2 ×4", run:12, walk:8},
-  {wk:3, dates:"Sep 28–Oct 4", label:"Run 3 / Walk 2 ×4", run:12, walk:8},
+  {wk:3, dates:"Sep 28–Oct 4", label:"Run 3 min / Walk 2 min ×4", run:12, walk:8},
+  {wk:3, dates:"Sep 28–Oct 4", label:"Run 3 min / Walk 2 min ×4", run:12, walk:8},
+  {wk:3, dates:"Sep 28–Oct 4", label:"Run 3 min / Walk 2 min ×4", run:12, walk:8},
 
-  {wk:4, dates:"Oct 5–11", label:"Run 5 / Walk 2 ×3", run:15, walk:6},
-  {wk:4, dates:"Oct 5–11", label:"Run 5 / Walk 2 ×3", run:15, walk:6},
-  {wk:4, dates:"Oct 5–11", label:"Run 5 / Walk 2 ×3", run:15, walk:6},
+  {wk:4, dates:"Oct 5–11", label:"Run 5 min / Walk 2 min ×3", run:15, walk:6},
+  {wk:4, dates:"Oct 5–11", label:"Run 5 min / Walk 2 min ×3", run:15, walk:6},
+  {wk:4, dates:"Oct 5–11", label:"Run 5 min / Walk 2 min ×3", run:15, walk:6},
 
-  {wk:5, dates:"Oct 12–18", label:"Run 8/Walk 1.5 ×2 + Run 5", run:21, walk:3},
-  {wk:5, dates:"Oct 12–18", label:"Run 8/Walk 1.5 ×2 + Run 5", run:21, walk:3},
-  {wk:5, dates:"Oct 12–18", label:"Run 10 / Walk 2 ×2 (longest)", run:20, walk:4},
+  {wk:5, dates:"Oct 12–18", label:"Run 8 min / Walk 1.5 min ×2 + Run 5 min", run:21, walk:3},
+  {wk:5, dates:"Oct 12–18", label:"Run 8 min / Walk 1.5 min ×2 + Run 5 min", run:21, walk:3},
+  {wk:5, dates:"Oct 12–18", label:"Run 10 min / Walk 2 min ×2 (longest)", run:20, walk:4},
 
-  {wk:6, dates:"Oct 19–25", label:"Run 12 / Walk 1 ×2", run:24, walk:2},
-  {wk:6, dates:"Oct 19–25", label:"Run 15 / Walk 2 / Run 8", run:23, walk:2},
+  {wk:6, dates:"Oct 19–25", label:"Run 12 min / Walk 1 min ×2", run:24, walk:2},
+  {wk:6, dates:"Oct 19–25", label:"Run 15 min / Walk 2 min / Run 8 min", run:23, walk:2},
   {wk:6, dates:"Oct 19–25", label:"Dress rehearsal: 20–25 min continuous", run:25, walk:0},
 
   {wk:7, dates:"Oct 26–Nov 1", label:"Easy 15 min jog/walk", run:10, walk:5},
   {wk:7, dates:"Oct 26–Nov 1", label:"10 min shakeout jog", run:10, walk:0},
 ];
-const crossTrainByWeek = {
-  1:"🧘🚴 Cross-train (optional)", 2:"🧘🚴 Cross-train (optional)", 3:"🧘🚴 Cross-train (optional)",
-  4:"🧘🚴 Cross-train (optional)", 5:"🧘🚴 Cross-train (optional)", 6:"🧘🚴 Cross-train (optional)",
-  7:"🧘🚴 Cross-train (optional)"
-};
-const race = {label:"🏁 RACE DAY — Golden Gate 5K (3.1 mi)"};
+const WEEK_COUNT = 7;
+const RACE_WEEK = 7;
+
+const ICON_CALENDAR = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>';
+const ICON_CLOSE = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 
 // Defaults for a first visit; overridden by paces saved with progress.
 let paceRun = 12;   // min per mile, easy jog
 let paceWalk = 20;  // min per mile, relaxed walk
 function distFor(s){ return s.run/paceRun + s.walk/paceWalk; }
 
-const table = document.getElementById('plan');
 let checks = new Array(sessions.length).fill(false);
 let crossChecks = {1:false,2:false,3:false,4:false,5:false,6:false,7:false};
 let raceChecked = false;
+let unlockedWeek = 1;   // highest week Kelsey has unlocked
+let currentWeek = 1;    // week shown in the week view
+let view = 'week';      // 'week' | 'plan'
 
-function buildTable(){
-  let html = "";
-  let i = 0;
-  while(i < sessions.length){
-    const wk = sessions[i].wk, dates = sessions[i].dates;
-    let rowCells = "";
-    let count = 0;
-    while(i < sessions.length && sessions[i].wk === wk && count < 3){
-      rowCells += cellHTML(i);
-      i++; count++;
-    }
-    rowCells += `<td class="cell wide cross">
-      <label class="task" for="cross${wk}">
-        <input type="checkbox" id="cross${wk}" data-wk="${wk}">
-        <span class="label">${crossTrainByWeek[wk]}</span>
-      </label>
-    </td>`;
-    html += `<tr class="row"><td class="wk">Week ${wk}<span>${dates}</span></td>${rowCells}</tr>`;
-  }
-  html += `<tr class="row race"><td class="wk">Week 7<span>Nov 1</span></td>
-            <td class="cell wide" colspan="4">
-              <label class="task" for="raceCheck">
-                <input type="checkbox" id="raceCheck">
-                <span class="label">${race.label}</span>
-              </label>
-            </td></tr>`;
-  table.innerHTML = html;
+const weekView = document.getElementById('weekView');
+const planView = document.getElementById('planView');
+const table = document.getElementById('plan');
+const viewToggle = document.getElementById('viewToggle');
+
+// Checkbox keys: "s<sessionIdx>", "c<week>" (cross-train), "race".
+function isChecked(key){
+  if(key === 'race') return raceChecked;
+  if(key[0] === 'c') return !!crossChecks[key.slice(1)];
+  return !!checks[+key.slice(1)];
 }
-function cellHTML(idx){
-  const s = sessions[idx];
-  return `<td class="cell">
-    <label class="task" for="chk${idx}">
-      <input type="checkbox" id="chk${idx}" data-idx="${idx}">
-      <span class="label">${s.label}</span>
+function setChecked(key, on){
+  if(key === 'race') raceChecked = on;
+  else if(key[0] === 'c') crossChecks[key.slice(1)] = on;
+  else checks[+key.slice(1)] = on;
+}
+function keyWeek(key){
+  if(key === 'race') return RACE_WEEK;
+  if(key[0] === 'c') return +key.slice(1);
+  return sessions[+key.slice(1)].wk;
+}
+
+function weekItems(wk){ return sessions.map((s,idx)=>({...s, idx})).filter(s => s.wk === wk); }
+function weekDates(wk){ return weekItems(wk)[0].dates; }
+function weekDone(wk){ return weekItems(wk).every(s => checks[s.idx]); }
+// For progress saved before weeks could be unlocked: unlock through the first unfinished week.
+function deriveUnlocked(){
+  let u = 1;
+  while(u < WEEK_COUNT && weekDone(u)) u++;
+  return u;
+}
+
+function cardHTML({key, eyebrow, label, meta, cls}){
+  const on = isChecked(key);
+  return `<label class="card ${cls || ''} ${on ? 'done' : ''}">
+    <input type="checkbox" data-key="${key}" ${on ? 'checked' : ''}>
+    <span class="body"><span class="eyebrow">${eyebrow}</span><span class="label">${label}</span></span>
+    ${meta ? `<span class="meta">${meta}</span>` : ''}
+  </label>`;
+}
+
+function renderWeek(){
+  const wk = currentWeek;
+  const items = weekItems(wk);
+  const done = items.filter(s => checks[s.idx]).length;
+  const next = wk + 1;
+  const nextLocked = wk < WEEK_COUNT && next > unlockedWeek;
+
+  let cards = items.map((s,k)=> cardHTML({
+    key:'s'+s.idx, eyebrow:`Workout ${k+1}`, label:s.label, meta:`${s.run + s.walk} min`,
+  })).join('');
+  cards += cardHTML({key:'c'+wk, eyebrow:'Optional', label:'🧘🚴 Cross-train: yoga or spin', cls:'cross'});
+  if(wk === RACE_WEEK){
+    cards += cardHTML({key:'race', eyebrow:'Sunday, Nov 1 · Race day', label:'🏁 Golden Gate 5K', meta:'3.1 mi', cls:'race'});
+  }
+
+  let unlock = '';
+  if(wk < WEEK_COUNT){
+    if(!nextLocked) unlock = `<button type="button" class="btn secondary" data-nav="1">Go to Week ${next} →</button>`;
+    else if(done === items.length) unlock = `<button type="button" class="btn primary" data-unlock="${next}">🔓 Unlock Week ${next}</button>`;
+    else unlock = `<p class="hint">🔒 Finish all ${items.length} workouts to unlock Week ${next}</p>`;
+  }
+
+  weekView.innerHTML = `
+    <div class="week-nav">
+      <button type="button" class="nav-btn" data-nav="-1" aria-label="Previous week" ${wk === 1 ? 'disabled' : ''}>‹</button>
+      <div class="week-title"><h2>Week ${wk}</h2><span>${weekDates(wk)}</span></div>
+      <button type="button" class="nav-btn ${nextLocked ? 'lock' : ''}" data-nav="1"
+        aria-label="${nextLocked ? `Week ${next} is locked` : 'Next week'}"
+        ${wk === WEEK_COUNT || nextLocked ? 'disabled' : ''}>${nextLocked ? '🔒' : '›'}</button>
+    </div>
+    <p class="week-progress">${done} of ${items.length} workouts done</p>
+    <div class="cards">${cards}</div>
+    <div class="unlock">${unlock}</div>`;
+}
+
+function taskCell(key, label, locked, cls){
+  const on = isChecked(key);
+  return `<td class="cell ${cls || ''}">
+    <label class="task ${on ? 'done' : ''}">
+      <input type="checkbox" data-key="${key}" ${on ? 'checked' : ''} ${locked ? 'disabled' : ''}>
+      <span class="label">${label}</span>
     </label>
   </td>`;
 }
-
-function wireEvents(){
-  sessions.forEach((s,idx)=>{
-    const chk = document.getElementById('chk'+idx);
-    chk.addEventListener('change', ()=>{
-      checks[idx] = chk.checked;
-      chk.closest('label.task').classList.toggle('done', checks[idx]);
-      if(checks[idx]) celebrate();
-      save(); render();
-    });
-  });
-  Object.keys(crossChecks).forEach(wk=>{
-    const chk = document.getElementById('cross'+wk);
-    chk.addEventListener('change', ()=>{
-      crossChecks[wk] = chk.checked;
-      chk.closest('label.task').classList.toggle('done', crossChecks[wk]);
-      if(crossChecks[wk]) celebrate();
-      save();
-    });
-  });
-  const raceChk = document.getElementById('raceCheck');
-  raceChk.addEventListener('change', ()=>{
-    raceChecked = raceChk.checked;
-    raceChk.closest('label.task').classList.toggle('done', raceChecked);
-    if(raceChecked) celebrate();
-    save(); render();
-  });
+function weekCell(wk, locked, dates){
+  if(!locked) return `<td class="wk"><button type="button" class="wk-link" data-goto="${wk}">Week ${wk}</button><span>${dates}</span></td>`;
+  const canUnlock = wk === unlockedWeek + 1 && weekDone(unlockedWeek);
+  return `<td class="wk">Week ${wk} 🔒<span>${dates}</span>${canUnlock ? `<button type="button" class="mini-unlock" data-unlock="${wk}">Unlock</button>` : ''}</td>`;
 }
 
-function syncBox(id, on){
-  const chk = document.getElementById(id);
-  chk.checked = on;
-  chk.closest('label.task').classList.toggle('done', on);
-}
-function syncCheckboxes(){
-  sessions.forEach((s,idx)=> syncBox('chk'+idx, checks[idx]));
-  Object.keys(crossChecks).forEach(wk=> syncBox('cross'+wk, crossChecks[wk]));
-  syncBox('raceCheck', raceChecked);
-}
+function renderPlan(){
+  let html = '';
+  for(let wk = 1; wk <= WEEK_COUNT; wk++){
+    const locked = wk > unlockedWeek;
+    const cells = weekItems(wk).map(s => taskCell('s'+s.idx, s.label, locked)).join('')
+      + taskCell('c'+wk, '🧘🚴 Cross-train (optional)', locked, 'wide cross');
+    html += `<tr class="row ${locked ? 'locked' : ''}">${weekCell(wk, locked, weekDates(wk))}${cells}</tr>`;
+  }
+  const raceLocked = unlockedWeek < RACE_WEEK;
+  html += `<tr class="row race ${raceLocked ? 'locked' : ''}"><td class="wk">Week ${RACE_WEEK}<span>Nov 1</span></td>
+    ${taskCell('race', '🏁 RACE DAY — Golden Gate 5K (3.1 mi)', raceLocked, 'wide').replace('<td ', '<td colspan="4" ')}</tr>`;
+  table.innerHTML = html;
 
-function render(){
   let totalMiles = 0, totalMin = 0, planMiles = 0;
   sessions.forEach((s,idx)=>{
     planMiles += distFor(s);
@@ -381,6 +542,65 @@ function render(){
     ? "🏁 Race complete — 3.1 miles, and every step before it! 🍂"
     : "Estimated at your jog/walk paces · " + planMiles.toFixed(1) + " training mi planned, then 3.1 mi on race day";
 }
+
+function renderAll(){
+  // Re-rendering replaces the checkboxes, so carry keyboard focus over to the new one.
+  const focusKey = document.activeElement && document.activeElement.dataset.key;
+  renderWeek();
+  renderPlan();
+  if(focusKey){
+    const container = view === 'week' ? weekView : planView;
+    const el = container.querySelector(`[data-key="${focusKey}"]`);
+    if(el) el.focus({preventScroll:true});
+  }
+}
+
+function showView(v){
+  view = v;
+  weekView.hidden = v !== 'week';
+  planView.hidden = v !== 'plan';
+  viewToggle.innerHTML = v === 'week' ? ICON_CALENDAR : ICON_CLOSE;
+  viewToggle.setAttribute('aria-label', v === 'week' ? 'Show full plan' : 'Back to this week');
+  window.scrollTo(0, 0);
+}
+
+document.addEventListener('change', e=>{
+  const key = e.target.dataset && e.target.dataset.key;
+  if(!key) return;
+  const on = e.target.checked;
+  setChecked(key, on);
+  renderAll();
+  if(on) celebrate();
+  save();
+});
+
+document.addEventListener('click', e=>{
+  const nav = e.target.closest('[data-nav]');
+  if(nav){
+    currentWeek = Math.min(unlockedWeek, Math.max(1, currentWeek + Number(nav.dataset.nav)));
+    renderWeek();
+    window.scrollTo(0, 0);
+    return;
+  }
+  const unlock = e.target.closest('[data-unlock]');
+  if(unlock){
+    const wk = Number(unlock.dataset.unlock);
+    unlockedWeek = Math.max(unlockedWeek, wk);
+    currentWeek = wk;
+    renderAll();
+    showView('week');
+    save();
+    return;
+  }
+  const go = e.target.closest('[data-goto]');
+  if(go){
+    currentWeek = Number(go.dataset.goto);
+    renderWeek();
+    showView('week');
+    return;
+  }
+  if(e.target.closest('#viewToggle')) showView(view === 'week' ? 'plan' : 'week');
+});
 
 const CHEERS = ["Nice one!", "Way to push it!", "Great effort today!", "Way to get after it!"];
 const REPEAT_CHEER = "She did it again!";
@@ -498,7 +718,7 @@ async function save(){
     await fetch('/api/progress', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({checks, crossChecks, raceChecked, paceRun, paceWalk}),
+      body: JSON.stringify({checks, crossChecks, raceChecked, paceRun, paceWalk, unlockedWeek}),
     });
   }catch(e){ /* offline or API unavailable, continue without persistence */ }
 }
@@ -515,16 +735,18 @@ async function load(){
       raceChecked = !!data.raceChecked;
       if(data.paceRun > 0) paceRun = data.paceRun;
       if(data.paceWalk > 0) paceWalk = data.paceWalk;
+      unlockedWeek = Number.isInteger(data.unlockedWeek)
+        ? Math.min(WEEK_COUNT, Math.max(1, data.unlockedWeek))
+        : deriveUnlocked();
     }
   }catch(e){ /* no saved progress yet */ }
 }
 
 (async function init(){
-  buildTable();
-  wireEvents();
+  showView('week');
   await load();
-  syncCheckboxes();
-  render();
+  currentWeek = unlockedWeek;
+  renderAll();
 })();
 </script>
 </body>
