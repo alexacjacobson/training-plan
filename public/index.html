@@ -329,6 +329,19 @@
     animation-delay:1.1s;
   }
   @keyframes fadeIn{to{opacity:1;}}
+  .home-panel{
+    background:rgba(251,246,236,0.2);
+    border-radius:22px;
+    padding:22px 16px 16px;
+  }
+  .completed-title{
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#FBE3C2;
+    margin:26px 0 10px 2px;
+  }
   .race-name{
     font-family:'Playfair Display',serif;
     font-size:28px;
@@ -355,9 +368,13 @@
     transition:box-shadow .2s;
   }
   .week-card:hover{box-shadow:var(--shadow-hover);}
-  .week-card:disabled{background:rgba(255,245,228,0.10);box-shadow:none;cursor:default;}
+  .week-card:disabled{background:rgba(255,245,228,0.12);box-shadow:none;cursor:default;}
   .week-card:disabled .wc-tag,
-  .week-card:disabled .wc-dates{color:rgba(255,245,228,0.55);}
+  .week-card:disabled .wc-dates{color:rgba(255,245,228,0.78);}
+  .week-card.completed{background:var(--done-bg);box-shadow:none;}
+  .week-card.completed .wc-title,
+  .week-card.completed .wc-dates{color:var(--done-text);}
+  .week-card.completed .wc-end{font-size:20px;color:var(--done-text);}
   .wc-body{display:flex;flex-direction:column;gap:1px;}
   .wc-tag{
     font-size:11px;
@@ -367,10 +384,10 @@
     color:#9A7B54;
   }
   .wc-title{font-family:'Playfair Display',serif;font-weight:700;font-size:21px;color:var(--rust);}
-  .week-card:disabled .wc-title{color:rgba(255,245,228,0.7);}
+  .week-card:disabled .wc-title{color:rgba(255,245,228,0.9);}
   .wc-dates{font-size:13px;font-weight:600;color:var(--muted);}
   .wc-end{font-size:24px;color:var(--rust);flex-shrink:0;}
-  .week-card:disabled .wc-end{font-size:17px;opacity:.7;}
+  .week-card:disabled .wc-end{font-size:17px;opacity:.85;}
   .week-card.current .wc-end{
     width:36px;height:36px;
     display:grid;
@@ -436,9 +453,15 @@
   <div class="home-inner">
     <h1 class="hello" id="hello"></h1>
     <p class="countdown" id="countdown"></p>
-    <h2 class="race-name">Golden Gate 5K</h2>
-    <p class="plan-name">Kelsey's 5K Training Plan · Sunday, Nov 1, 2026</p>
-    <div class="week-list" id="weekList"></div>
+    <div class="home-panel">
+      <h2 class="race-name">Golden Gate 5K</h2>
+      <p class="plan-name">Kelsey's 5K Training Plan · Sunday, Nov 1, 2026</p>
+      <div class="week-list" id="weekList"></div>
+      <div id="completedSection" hidden>
+        <h3 class="completed-title">Completed</h3>
+        <div class="week-list" id="completedList"></div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -654,22 +677,40 @@ function renderHome(){
   document.getElementById('countdown').textContent =
     n > 1 ? `${n} weeks to race week` : n === 1 ? '1 week to race week' : "It's race week! 🏁";
 
-  let html = '';
-  for(let wk = 1; wk <= WEEK_COUNT; wk++){
-    const locked = wk > unlockedWeek;
-    const tags = [wk === unlockedWeek && 'This week', wk === RACE_WEEK && 'Race week'].filter(Boolean).join(' · ');
-    html += `<button type="button" class="week-card ${wk === unlockedWeek ? 'current' : ''}"
-        ${locked ? 'disabled' : `data-goto="${wk}"`}
-        aria-label="Week ${wk}, ${weekDates(wk)}${locked ? ', locked' : ''}">
+  const weekCard = (wk, {cls = '', attrs, tag, end, status = ''}) => {
+    const tags = [tag, wk === RACE_WEEK && 'Race week'].filter(Boolean).join(' · ');
+    return `<button type="button" class="week-card ${cls}" ${attrs}
+        aria-label="Week ${wk}, ${weekDates(wk)}${status ? ', ' + status : ''}">
       <span class="wc-body">
         ${tags ? `<span class="wc-tag">${tags}</span>` : ''}
         <span class="wc-title">Week ${wk}</span>
         <span class="wc-dates">${weekDates(wk)}</span>
       </span>
-      <span class="wc-end" aria-hidden="true">${locked ? '🔒' : '›'}</span>
+      <span class="wc-end" aria-hidden="true">${end}</span>
     </button>`;
+  };
+
+  let upcoming = '', completed = '';
+  for(let wk = 1; wk <= WEEK_COUNT; wk++){
+    if(wk <= unlockedWeek && homeWeekDone(wk)){
+      completed += weekCard(wk, {cls:'completed', attrs:`data-goto="${wk}"`, tag:'Completed', end:'✓', status:'completed'});
+    } else if(wk === unlockedWeek + 1 && weekDone(unlockedWeek)){
+      upcoming += weekCard(wk, {cls:'current', attrs:`data-unlock="${wk}"`, tag:'Ready to unlock', end:'🔓', status:'ready to unlock'});
+    } else if(wk > unlockedWeek){
+      upcoming += weekCard(wk, {attrs:'disabled', end:'🔒', status:'locked'});
+    } else {
+      const current = wk === unlockedWeek;
+      upcoming += weekCard(wk, {cls: current ? 'current' : '', attrs:`data-goto="${wk}"`, tag: current && 'This week', end:'›'});
+    }
   }
-  document.getElementById('weekList').innerHTML = html;
+  document.getElementById('weekList').innerHTML = upcoming;
+  document.getElementById('completedList').innerHTML = completed;
+  document.getElementById('completedSection').hidden = !completed;
+}
+
+// A week moves to "Completed" on the home page once every workout is checked (plus the race, in race week).
+function homeWeekDone(wk){
+  return weekDone(wk) && (wk !== RACE_WEEK || raceChecked);
 }
 
 // "Welcome back" once she has logged anything; a first-visit welcome before that.
