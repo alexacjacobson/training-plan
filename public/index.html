@@ -297,6 +297,98 @@
   }
   .tracker .fine{font-weight:500;font-size:10.5px;color:var(--muted);display:block;margin-top:3px;}
 
+  /* Home view */
+  body.on-home{background:var(--rust);}
+  .home-link{color:inherit;text-decoration:none;}
+  .home{padding-block:52px 40px;}
+  .home-inner{max-width:560px;margin:0 auto;padding-inline:16px;}
+  .hello{
+    font-family:'Playfair Display',serif;
+    font-weight:700;
+    font-size:clamp(38px,9vw,56px);
+    line-height:1.12;
+    color:#FFF5E4;
+    margin:0;
+  }
+  .hello .line{display:block;}
+  .hello .word{
+    display:inline-block;
+    opacity:0;
+    filter:blur(12px);
+    transform:translateY(4px);
+    animation:blurIn .7s ease forwards;
+    animation-delay:calc(var(--i) * 150ms);
+  }
+  @keyframes blurIn{to{opacity:1;filter:blur(0);transform:none;}}
+  .countdown{
+    margin:14px 0 30px;
+    font-size:16px;
+    font-weight:600;
+    color:#FBE3C2;
+    opacity:0;
+    animation:fadeIn .6s ease forwards;
+    animation-delay:1.1s;
+  }
+  @keyframes fadeIn{to{opacity:1;}}
+  .home-panel{
+    background:var(--paper);
+    border-radius:22px;
+    padding:24px 18px 18px;
+    box-shadow:0 10px 30px rgba(60,20,5,0.25);
+  }
+  .race-name{
+    font-family:'Playfair Display',serif;
+    font-size:28px;
+    color:var(--rust);
+    margin:0;
+    line-height:1.15;
+  }
+  .plan-name{margin:2px 0 18px;font-size:13.5px;font-weight:600;color:var(--muted);}
+  .week-list{display:flex;flex-direction:column;gap:10px;}
+  .week-card{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    width:100%;
+    text-align:left;
+    background:#fff;
+    color:var(--ink);
+    border:none;
+    border-radius:14px;
+    padding:15px 18px;
+    cursor:pointer;
+    box-shadow:var(--shadow);
+    transition:box-shadow .2s;
+  }
+  .week-card:hover{box-shadow:var(--shadow-hover);}
+  .week-card:disabled{background:#F1ECE2;box-shadow:none;cursor:default;opacity:.6;}
+  .wc-body{display:flex;flex-direction:column;gap:1px;}
+  .wc-tag{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:#9A7B54;
+  }
+  .wc-title{font-family:'Playfair Display',serif;font-weight:700;font-size:21px;color:var(--rust);}
+  .week-card:disabled .wc-title{color:var(--ink);}
+  .wc-dates{font-size:13px;font-weight:600;color:var(--muted);}
+  .wc-end{font-size:24px;color:var(--rust);flex-shrink:0;}
+  .week-card:disabled .wc-end{font-size:17px;}
+  .week-card.current .wc-end{
+    width:36px;height:36px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    background:var(--rust);
+    color:#FFF5E4;
+    font-size:22px;
+  }
+  @media (prefers-reduced-motion:reduce){
+    .hello .word, .countdown{animation:none;opacity:1;filter:none;transform:none;}
+  }
+
   /* Celebration overlay */
   .celebrate{
     position:fixed;
@@ -345,10 +437,22 @@
 </head>
 <body>
 
-<header class="top">
+<section class="home" id="homeView" hidden>
+  <div class="home-inner">
+    <h1 class="hello" id="hello" aria-label="Hey Kelsey! Another day, another slay."></h1>
+    <p class="countdown" id="countdown"></p>
+    <div class="home-panel">
+      <h2 class="race-name">Golden Gate 5K</h2>
+      <p class="plan-name">Kelsey's 5K Training Plan</p>
+      <div class="week-list" id="weekList"></div>
+    </div>
+  </div>
+</section>
+
+<header class="top" id="topBar">
   <div class="top-inner">
     <div>
-      <h1>Kelsey's 5K Training Plan</h1>
+      <h1><a href="#" class="home-link" data-home>Kelsey's 5K Training Plan</a></h1>
       <p>Golden Gate 5K · Sunday, Nov 1, 2026</p>
     </div>
     <button type="button" class="icon-btn" id="viewToggle" aria-label="Show full plan"></button>
@@ -409,6 +513,8 @@ const sessions = [
 ];
 const WEEK_COUNT = 7;
 const RACE_WEEK = 7;
+const RACE_WEEK_START = new Date(2026, 9, 26); // Mon Oct 26, 2026
+const HELLO_LINES = [["Hey", "Kelsey!"], ["Another", "day,", "another", "slay."]];
 
 const ICON_CALENDAR = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>';
 const ICON_CLOSE = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
@@ -423,8 +529,10 @@ let crossChecks = {1:false,2:false,3:false,4:false,5:false,6:false,7:false};
 let raceChecked = false;
 let unlockedWeek = 1;   // highest week Kelsey has unlocked
 let currentWeek = 1;    // week shown in the week view
-let view = 'week';      // 'week' | 'plan'
+let view = 'home';      // 'home' | 'week' | 'plan'
 
+const homeView = document.getElementById('homeView');
+const topBar = document.getElementById('topBar');
 const weekView = document.getElementById('weekView');
 const planView = document.getElementById('planView');
 const table = document.getElementById('plan');
@@ -543,9 +651,51 @@ function renderPlan(){
     : "Estimated at your jog/walk paces · " + planMiles.toFixed(1) + " training mi planned, then 3.1 mi on race day";
 }
 
+function weeksToRaceWeek(){
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.ceil((RACE_WEEK_START - today) / (7 * 86400000));
+}
+
+function renderHome(){
+  const n = weeksToRaceWeek();
+  document.getElementById('countdown').textContent =
+    n > 1 ? `${n} weeks to race week` : n === 1 ? '1 week to race week' : "It's race week! 🏁";
+
+  let html = '';
+  for(let wk = 1; wk <= WEEK_COUNT; wk++){
+    const locked = wk > unlockedWeek;
+    const tags = [wk === unlockedWeek && 'This week', wk === RACE_WEEK && 'Race week'].filter(Boolean).join(' · ');
+    html += `<button type="button" class="week-card ${wk === unlockedWeek ? 'current' : ''}"
+        ${locked ? 'disabled' : `data-goto="${wk}"`}
+        aria-label="Week ${wk}, ${weekDates(wk)}${locked ? ', locked' : ''}">
+      <span class="wc-body">
+        ${tags ? `<span class="wc-tag">${tags}</span>` : ''}
+        <span class="wc-title">Week ${wk}</span>
+        <span class="wc-dates">${weekDates(wk)}</span>
+      </span>
+      <span class="wc-end" aria-hidden="true">${locked ? '🔒' : '›'}</span>
+    </button>`;
+  }
+  document.getElementById('weekList').innerHTML = html;
+}
+
+// Rebuilds the greeting so each word blurs into view in turn.
+function playHello(){
+  let i = 0;
+  document.getElementById('hello').innerHTML = HELLO_LINES.map(words =>
+    `<span class="line" aria-hidden="true">${words.map(w => `<span class="word" style="--i:${i++}">${w}</span>`).join(' ')}</span>`
+  ).join('');
+  const countdown = document.getElementById('countdown');
+  countdown.style.animation = 'none';
+  void countdown.offsetWidth;
+  countdown.style.animation = '';
+}
+
 function renderAll(){
   // Re-rendering replaces the checkboxes, so carry keyboard focus over to the new one.
   const focusKey = document.activeElement && document.activeElement.dataset.key;
+  renderHome();
   renderWeek();
   renderPlan();
   if(focusKey){
@@ -557,10 +707,14 @@ function renderAll(){
 
 function showView(v){
   view = v;
+  homeView.hidden = v !== 'home';
+  topBar.hidden = v === 'home';
   weekView.hidden = v !== 'week';
   planView.hidden = v !== 'plan';
-  viewToggle.innerHTML = v === 'week' ? ICON_CALENDAR : ICON_CLOSE;
-  viewToggle.setAttribute('aria-label', v === 'week' ? 'Show full plan' : 'Back to this week');
+  document.body.classList.toggle('on-home', v === 'home');
+  if(v === 'home') playHello();
+  viewToggle.innerHTML = v === 'plan' ? ICON_CLOSE : ICON_CALENDAR;
+  viewToggle.setAttribute('aria-label', v === 'plan' ? 'Back to this week' : 'Show full plan');
   window.scrollTo(0, 0);
 }
 
@@ -575,6 +729,11 @@ document.addEventListener('change', e=>{
 });
 
 document.addEventListener('click', e=>{
+  if(e.target.closest('[data-home]')){
+    e.preventDefault();
+    showView('home');
+    return;
+  }
   const nav = e.target.closest('[data-nav]');
   if(nav){
     currentWeek = Math.min(unlockedWeek, Math.max(1, currentWeek + Number(nav.dataset.nav)));
@@ -756,7 +915,8 @@ function clearLockedChecks(){
 }
 
 (async function init(){
-  showView('week');
+  renderHome();
+  showView('home');
   await load();
   if(clearLockedChecks()) save();
   currentWeek = unlockedWeek;
