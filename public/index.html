@@ -432,11 +432,27 @@
     transform:scale(.7);
     transition:opacity .5s ease, transform .65s cubic-bezier(.2,.9,.3,1.25);
   }
+  .celebrate .msg-title{display:block;}
+  .celebrate .msg-sub{
+    display:block;
+    max-width:22em;
+    margin:14px auto 0;
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    font-weight:600;
+    font-size:clamp(17px,4.6vw,24px);
+    line-height:1.35;
+    text-wrap:balance;
+    color:#FFF5E4;
+    opacity:0;
+    transform:translateY(8px);
+    transition:opacity .5s ease .35s, transform .5s ease .35s;
+  }
   .celebrate.show-wash .wash{opacity:1;}
   .celebrate.show-msg .msg{opacity:1;transform:scale(1);}
+  .celebrate.show-msg .msg-sub{opacity:1;transform:none;}
   .celebrate.out{opacity:0;}
   @media (prefers-reduced-motion:reduce){
-    .celebrate .msg{transform:none;}
+    .celebrate .msg, .celebrate .msg-sub{transform:none;}
   }
   @media (max-width:480px){
     .top h1{font-size:23px;}
@@ -762,9 +778,12 @@ document.addEventListener('change', e=>{
   const key = e.target.dataset && e.target.dataset.key;
   if(!key) return;
   const on = e.target.checked;
+  const wk = keyWeek(key);
+  const wasWeekDone = homeWeekDone(wk);
   setChecked(key, on);
   renderAll();
-  if(on) celebrate();
+  // The check that finishes a week gets the bigger week celebration.
+  if(on) celebrate(!wasWeekDone && homeWeekDone(wk) ? wk : null);
   save();
 });
 
@@ -819,18 +838,71 @@ function pickCheer(){
   return lastCheer;
 }
 
-function newSparkle(W, H, initial){
+const FESTIVE_COLORS = ['#E0A937', '#F3C280', '#FFF5E4', '#D9772E', '#FFD27A', '#F2B8A0', '#C9D6A8'];
+const randomFestive = ()=> FESTIVE_COLORS[Math.floor(Math.random()*FESTIVE_COLORS.length)];
+
+function newSparkle(W, H, initial, big){
+  const star = big && Math.random() < 0.35;
   return {
     x: Math.random()*W,
     y: initial ? Math.random()*H : -10 - Math.random()*40,
     vx: (Math.random()-0.5)*50,
     vy: 60 + Math.random()*180,
-    size: 3 + Math.random()*9,
+    size: star ? 6 + Math.random()*9 : 3 + Math.random()*9,
     rot: Math.random()*Math.PI,
     spin: (Math.random()-0.5)*3,
     phase: Math.random()*Math.PI*2,
     delay: initial ? Math.random()*650 : 0,
+    star,
+    color: big ? randomFestive() : null,
   };
+}
+function drawStar(ctx, x, y, r, rot){
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rot);
+  ctx.beginPath();
+  for(let i = 0; i < 10; i++){
+    const radius = i % 2 ? r*0.45 : r;
+    const a = -Math.PI/2 + i*Math.PI/5;
+    ctx.lineTo(Math.cos(a)*radius, Math.sin(a)*radius);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+// iOS Safari has no vibration API, but toggling a native switch control plays a system haptic tick.
+function hapticTap(){
+  try{
+    const label = document.createElement('label');
+    label.setAttribute('aria-hidden', 'true');
+    label.style.display = 'none';
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.setAttribute('switch', '');
+    label.appendChild(input);
+    document.head.appendChild(label);
+    label.click();
+    label.remove();
+  }catch(e){ /* haptics are a nice-to-have */ }
+}
+// Plays a tick at each offset (ms); uses the vibration API where it exists (Android).
+function playHaptics(offsets, timers){
+  if(typeof navigator.vibrate === 'function'){
+    // Browsers ignore vibration until the person has actually tapped the page.
+    if(navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
+    const pattern = [];
+    let end = 0;
+    offsets.forEach((o, i)=>{
+      if(i) pattern.push(Math.max(0, o - end));
+      pattern.push(20);
+      end = o + 20;
+    });
+    navigator.vibrate(pattern);
+    return;
+  }
+  offsets.forEach(o => o === 0 ? hapticTap() : timers.push(setTimeout(hapticTap, o)));
 }
 function drawSparkle(ctx, x, y, r, rot){
   ctx.save();
@@ -847,14 +919,24 @@ function drawSparkle(ctx, x, y, r, rot){
 }
 
 // Sparkle shower → rust wash fills in → cheer scales into place → fades out (tap to skip).
-function celebrate(){
+// Pass a week number for the longer, multicolor week-complete version with stars.
+function celebrate(week){
   if(activeCelebration) activeCelebration.close(true);
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const big = week != null;
+  const T = big ? {wash:650, msg:1300, close:4800} : {wash:550, msg:1150, close:3100};
 
   const el = document.createElement('div');
   el.className = 'celebrate';
   el.innerHTML = '<div class="wash"></div><canvas></canvas><div class="msg" role="status"></div>';
-  el.querySelector('.msg').textContent = pickCheer();
+  const msg = el.querySelector('.msg');
+  if(big){
+    msg.innerHTML = '<span class="msg-title"></span><span class="msg-sub"></span>';
+    msg.querySelector('.msg-title').textContent = 'Congrats Kelsey!';
+    msg.querySelector('.msg-sub').textContent = `You just completed Week ${week}'s workouts. Great job!`;
+  } else {
+    msg.textContent = pickCheer();
+  }
   document.body.appendChild(el);
 
   const canvas = el.querySelector('canvas');
@@ -864,42 +946,75 @@ function celebrate(){
   canvas.width = W*dpr; canvas.height = H*dpr;
   ctx.scale(dpr, dpr);
 
-  const count = reduce ? 0 : Math.min(420, Math.round(W*H/2200));
-  const sparkles = Array.from({length:count}, ()=> newSparkle(W, H, true));
+  const count = reduce ? 0 : Math.min(big ? 560 : 420, Math.round(W*H/(big ? 1600 : 2200)));
+  const sparkles = Array.from({length:count}, ()=> newSparkle(W, H, true, big));
+  const burst = [];
   const start = performance.now();
   let prev = start, raf = 0, closed = false;
   const timers = [];
+
+  // Stars that shoot out from behind the message as it appears.
+  function spawnBurst(){
+    for(let i = 0; i < 44; i++){
+      const a = Math.random()*Math.PI*2, speed = 250 + Math.random()*450;
+      burst.push({
+        x: W/2, y: H/2,
+        vx: Math.cos(a)*speed, vy: Math.sin(a)*speed - 120,
+        size: 5 + Math.random()*9,
+        rot: Math.random()*Math.PI, spin: (Math.random()-0.5)*8,
+        color: randomFestive(), age: 0, life: 1.2 + Math.random()*0.8,
+      });
+    }
+  }
 
   function frame(now){
     const t = now - start;
     const dt = Math.min(0.05, (now - prev)/1000);
     prev = now;
     // Sparkles start rust, then shift to a pale glint as the rust wash fills in behind them.
-    const mix = Math.min(1, Math.max(0, (t - 550)/700));
+    const mix = Math.min(1, Math.max(0, (t - T.wash)/700));
     const r = Math.round(166 + 89*mix), g = Math.round(64 + 176*mix), b = Math.round(31 + 195*mix);
+    const glint = `rgb(${r},${g},${b})`;
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = `rgb(${r},${g},${b})`;
     for(const s of sparkles){
       if(t < s.delay) continue;
       s.x += s.vx*dt; s.y += s.vy*dt; s.rot += s.spin*dt;
-      if(s.y > H + 20 && t < 1800) Object.assign(s, newSparkle(W, H, false));
+      if(s.y > H + 20 && t < T.close - 1200) Object.assign(s, newSparkle(W, H, false, big));
       const grow = Math.min(1, (t - s.delay)/250);
       ctx.globalAlpha = 0.55 + 0.45*Math.sin(t/140 + s.phase);
-      drawSparkle(ctx, s.x, s.y, s.size*grow, s.rot);
+      ctx.fillStyle = s.color || glint;
+      (s.star ? drawStar : drawSparkle)(ctx, s.x, s.y, s.size*grow, s.rot);
+    }
+    for(const p of burst){
+      p.age += dt;
+      if(p.age > p.life) continue;
+      p.vy += 520*dt;
+      p.x += p.vx*dt; p.y += p.vy*dt; p.rot += p.spin*dt;
+      ctx.globalAlpha = 1 - p.age/p.life;
+      ctx.fillStyle = p.color;
+      drawStar(ctx, p.x, p.y, p.size, p.rot);
     }
     ctx.globalAlpha = 1;
     raf = requestAnimationFrame(frame);
   }
   if(!reduce) raf = requestAnimationFrame(frame);
 
-  timers.push(setTimeout(()=> el.classList.add('show-wash'), reduce ? 0 : 550));
-  timers.push(setTimeout(()=> el.classList.add('show-msg'), reduce ? 250 : 1150));
-  timers.push(setTimeout(()=> close(), reduce ? 2200 : 3100));
+  playHaptics(big
+    ? [0, 90, 180, 270, 360, 450, 560, 680, T.msg, T.msg + 90, T.msg + 180, T.msg + 420]
+    : [0, 110, T.msg], timers);
+
+  timers.push(setTimeout(()=> el.classList.add('show-wash'), reduce ? 0 : T.wash));
+  timers.push(setTimeout(()=>{
+    el.classList.add('show-msg');
+    if(big && !reduce) spawnBurst();
+  }, reduce ? 250 : T.msg));
+  timers.push(setTimeout(()=> close(), reduce ? T.close - 900 : T.close));
 
   function close(immediate){
     if(closed) return;
     closed = true;
     timers.forEach(clearTimeout);
+    if(typeof navigator.vibrate === 'function') navigator.vibrate(0);
     if(activeCelebration === api) activeCelebration = null;
     const finish = ()=>{ cancelAnimationFrame(raf); el.remove(); };
     if(immediate) return finish();
