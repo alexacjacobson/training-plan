@@ -41,7 +41,7 @@
     box-shadow:0 4px 18px rgba(90,50,20,0.12);
   }
   header{
-    background:linear-gradient(180deg,var(--sky-top) 0%, var(--sky-mid) 55%, var(--sky-bot) 100%);
+    background:var(--rust);
     padding:16px 22px 14px;
     text-align:center;
   }
@@ -57,17 +57,6 @@
     color:#FBE3C2;
     font-size:13.5px;
     font-weight:600;
-  }
-  .legend{
-    display:flex;
-    justify-content:center;
-    gap:16px;
-    font-size:12px;
-    padding:8px 12px;
-    background:#F6EAD3;
-    border-bottom:1px solid var(--paper-line);
-    color:var(--ink);
-    flex-wrap:wrap;
   }
   .scroll-hint{
     text-align:center;
@@ -119,17 +108,18 @@
     align-items:flex-start;
     gap:5px;
     background:#fff;
-    border:1px solid var(--paper-line);
+    border:none;
     border-radius:9px;
     padding:5px 7px;
     cursor:pointer;
-    transition:background .2s, border-color .2s, color .2s;
+    box-shadow:0 1px 3px rgba(90,50,20,0.08), 0 2px 8px rgba(90,50,20,0.06);
+    transition:background .2s, box-shadow .2s, color .2s;
     min-height:34px;
   }
-  label.task:hover{border-color:var(--pumpkin);}
+  label.task:hover{box-shadow:0 2px 6px rgba(90,50,20,0.12), 0 4px 14px rgba(90,50,20,0.10);}
   label.task.done{
     background:var(--done-bg);
-    border-color:var(--done-border);
+    box-shadow:none;
   }
   label.task.done .label{
     text-decoration:line-through;
@@ -142,23 +132,17 @@
     flex-shrink:0;
   }
   .label{font-size:11.3px;line-height:1.25;font-weight:600;}
-  .cross .task{border-style:dashed;}
   .cross .label{color:#6B7A5E;}
   .cross .task.done .label{color:var(--done-text);}
-  .race .task{
-    background:linear-gradient(90deg,#F7D9A6,#F3C280);
-    border-color:var(--rust);
-  }
   .race .task .label{font-weight:700;color:var(--rust);}
-  .race .task.done{background:var(--done-bg); border-color:var(--done-border);}
   .race .task.done .label{color:var(--done-text);}
 
   .tracker{
     margin:10px 18px 14px;
     padding:12px 16px;
-    background:#F6EAD3;
-    border:1px solid var(--paper-line);
+    background:#fff;
     border-radius:14px;
+    box-shadow:0 1px 3px rgba(90,50,20,0.08), 0 2px 8px rgba(90,50,20,0.06);
   }
   .tracker h2{
     font-family:'Playfair Display',serif;
@@ -253,11 +237,6 @@
     <p>Race Day: Sunday, November 1, 2026 · San Francisco</p>
   </header>
 
-  <div class="legend">
-    <span>🏃 Run/walk day</span>
-    <span>🧘 Yoga (optional)</span>
-    <span>🚴 Spin (optional)</span>
-  </div>
   <div class="scroll-hint">← swipe to see the full week →</div>
 
   <div class="table-wrap">
