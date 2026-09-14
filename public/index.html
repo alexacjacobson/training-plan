@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kelsey's 5K Training Plan</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --paper:#FBF6EC;
@@ -23,7 +23,7 @@
   *{box-sizing:border-box;}
   body{
     margin:0;
-    font-family:'Quicksand',sans-serif;
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
     background:var(--paper);
     color:var(--ink);
   }
@@ -196,7 +196,7 @@
   }
   td.wk span{
     display:block;
-    font-family:'Quicksand',sans-serif;
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
     font-weight:600;
     font-size:9.5px;
     color:var(--muted);
@@ -742,9 +742,23 @@ async function load(){
   }catch(e){ /* no saved progress yet */ }
 }
 
+// Weeks that aren't unlocked yet can't have progress; revert any stray checks to incomplete.
+function clearLockedChecks(){
+  let changed = false;
+  sessions.forEach((s,idx)=>{
+    if(s.wk > unlockedWeek && checks[idx]){ checks[idx] = false; changed = true; }
+  });
+  Object.keys(crossChecks).forEach(wk=>{
+    if(+wk > unlockedWeek && crossChecks[wk]){ crossChecks[wk] = false; changed = true; }
+  });
+  if(RACE_WEEK > unlockedWeek && raceChecked){ raceChecked = false; changed = true; }
+  return changed;
+}
+
 (async function init(){
   showView('week');
   await load();
+  if(clearLockedChecks()) save();
   currentWeek = unlockedWeek;
   renderAll();
 })();
