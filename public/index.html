@@ -594,6 +594,15 @@ function deriveUnlocked(){
   while(u < WEEK_COUNT && weekDone(u)) u++;
   return u;
 }
+// A week only stays unlocked while every earlier week is complete; relock (and clear) anything past that.
+function syncUnlocks(){
+  const reachable = deriveUnlocked();
+  if(unlockedWeek <= reachable) return false;
+  unlockedWeek = reachable;
+  clearLockedChecks();
+  currentWeek = Math.min(currentWeek, unlockedWeek);
+  return true;
+}
 
 function cardHTML({key, eyebrow, label, meta, cls}){
   const on = isChecked(key);
@@ -781,6 +790,7 @@ document.addEventListener('change', e=>{
   const wk = keyWeek(key);
   const wasWeekDone = homeWeekDone(wk);
   setChecked(key, on);
+  if(!on) syncUnlocks();
   renderAll();
   // The check that finishes a week gets the bigger week celebration.
   if(on) celebrate(!wasWeekDone && homeWeekDone(wk) ? wk : null);
@@ -1072,7 +1082,8 @@ function clearLockedChecks(){
 (async function init(){
   // Wait for saved progress so the greeting and week cards are right on first paint.
   await load();
-  if(clearLockedChecks()) save();
+  const relocked = syncUnlocks();
+  if(clearLockedChecks() || relocked) save();
   currentWeek = unlockedWeek;
   renderAll();
   showView('home');
